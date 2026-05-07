@@ -2,49 +2,157 @@ name: CI Pipeline
 
 on:
   push:
+    branches:
+      - "**"
+
   pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-test:
+  lint-and-build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # -------------------------
+      # CHECKOUT
+      # -------------------------
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # -------------------------
+      # NODE
+      # -------------------------
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
+      # -------------------------
+      # PNPM
+      # -------------------------
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      - name: Install dependencies
-        run: pnpm install
+      # -------------------------
+      # INSTALL
+      # -------------------------
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
 
+      # -------------------------
+      # LINT
+      # -------------------------
+      - name: Run ESLint
+        run: pnpm lint
+
+      # -------------------------
+      # BUILD
+      # -------------------------
+      - name: Build Applications
+        run: pnpm build
+
+  playwright:
+    needs: lint-and-build
+
+    # -------------------------
+    # RUN ONLY ON PR + MAIN
+    # -------------------------
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------
+      # CHECKOUT
+      # -------------------------
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # -------------------------
+      # NODE
+      # -------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # -------------------------
+      # PNPM
+      # -------------------------
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # -------------------------
+      # INSTALL
+      # -------------------------
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # -------------------------
+      # BUILD
+      # -------------------------
+      - name: Build Applications
+        run: pnpm build
+
+      # -------------------------
+      # INSTALL PLAYWRIGHT
+      # -------------------------
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Run Lint
-        run: pnpm lint
-
-      - name: Build All Apps
-        run: pnpm build
-
+      # -------------------------
+      # START BACKEND
+      # -------------------------
       - name: Start Backend
-        run: pnpm --filter express dev &
-      
+        run: |
+          pnpm --filter express start > backend.log 2>&1 &
+
+      # -------------------------
+      # START FRONTEND
+      # -------------------------
       - name: Start Frontend
-        run: pnpm --filter react dev &
+        run: |
+          pnpm --filter react dev -- --host 0.0.0.0 > frontend.log 2>&1 &
 
-      - name: Wait for frontend
-        run: npx wait-on http://localhost:5173
+      # -------------------------
+      # WAIT FOR BACKEND
+      # -------------------------
+      - name: Wait for Backend
+        run: npx wait-on http://localhost:5000 --timeout 30000
 
-      - name: Wait for backend
-        run: npx wait-on http://localhost:5000
+      # -------------------------
+      # WAIT FOR FRONTEND
+      # -------------------------
+      - name: Wait for Frontend
+        run: npx wait-on http://localhost:5173 --timeout 30000
 
+      # -------------------------
+      # DEBUG BACKEND
+      # -------------------------
+      - name: Debug Backend
+        run: |
+          curl http://localhost:5000 || true
+
+      # -------------------------
+      # RUN PLAYWRIGHT
+      # -------------------------
       - name: Run Playwright Tests
         run: pnpm test:e2e
+
+      # -------------------------
+      # SHOW LOGS IF FAILED
+      # -------------------------
+      - name: Show Backend Logs
+        if: failure()
+        run: cat backend.log
+
+      - name: Show Frontend Logs
+        if: failure()
+        run: cat frontend.log
