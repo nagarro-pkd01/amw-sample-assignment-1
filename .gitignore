@@ -1,0 +1,20 @@
+node_modules
+
+dist
+build
+
+.env
+
+logs
+*.log
+
+# sqlite
+*.sqlite
+db.sqlite
+
+playwright-report
+test-results
+
+.vscode
+
+.DS_Store
