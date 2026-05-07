@@ -151,6 +151,8 @@ jobs:
       - name: Start Backend
         run: |
           pnpm --filter express start > backend.log 2>&1 &
+          sleep 10
+          cat backend.log
 
       # -------------------------
       # START FRONTEND
@@ -163,7 +165,8 @@ jobs:
       # WAIT FOR BACKEND
       # -------------------------
       - name: Wait for Backend
-        run: npx wait-on http://localhost:5000 --timeout 30000
+        run: |
+          npx wait-on http://localhost:5000 --timeout 30000
 
       # -------------------------
       # WAIT FOR FRONTEND
