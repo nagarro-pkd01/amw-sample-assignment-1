@@ -21,21 +21,40 @@ jobs:
         uses: actions/checkout@v4
 
       # -------------------------
-      # NODE
+      # SETUP NODE
       # -------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
 
       # -------------------------
-      # PNPM
+      # SETUP PNPM
       # -------------------------
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          run_install: false
+
+      # -------------------------
+      # GET PNPM STORE
+      # -------------------------
+      - name: Get PNPM Store Directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      # -------------------------
+      # CACHE PNPM
+      # -------------------------
+      - name: Setup PNPM Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       # -------------------------
       # INSTALL
@@ -59,7 +78,7 @@ jobs:
     needs: lint-and-build
 
     # -------------------------
-    # RUN ONLY ON PR + MAIN
+    # RUN ONLY FOR PR + MAIN
     # -------------------------
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
 
@@ -73,21 +92,40 @@ jobs:
         uses: actions/checkout@v4
 
       # -------------------------
-      # NODE
+      # SETUP NODE
       # -------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
 
       # -------------------------
-      # PNPM
+      # SETUP PNPM
       # -------------------------
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          run_install: false
+
+      # -------------------------
+      # GET PNPM STORE
+      # -------------------------
+      - name: Get PNPM Store Directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      # -------------------------
+      # CACHE PNPM
+      # -------------------------
+      - name: Setup PNPM Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       # -------------------------
       # INSTALL
@@ -134,20 +172,13 @@ jobs:
         run: npx wait-on http://localhost:5173 --timeout 30000
 
       # -------------------------
-      # DEBUG BACKEND
-      # -------------------------
-      - name: Debug Backend
-        run: |
-          curl http://localhost:5000 || true
-
-      # -------------------------
       # RUN PLAYWRIGHT
       # -------------------------
       - name: Run Playwright Tests
         run: pnpm test:e2e
 
       # -------------------------
-      # SHOW LOGS IF FAILED
+      # SHOW LOGS ON FAILURE
       # -------------------------
       - name: Show Backend Logs
         if: failure()
