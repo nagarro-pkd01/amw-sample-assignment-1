@@ -166,7 +166,7 @@ jobs:
       # -------------------------
       - name: Wait for Backend
         run: |
-          npx wait-on http://localhost:5000 --timeout 30000
+          npx wait-on http://localhost:3000 --timeout 30000
 
       # -------------------------
       # WAIT FOR FRONTEND
