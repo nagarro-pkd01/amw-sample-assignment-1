@@ -1,6 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { Page } from "@playwright/test";
 
-test("signup success", async ({ page }) => {
+export async function signupAndLogin(page: Page) {
   const username = `user_${Date.now()}`;
 
   await page.goto("/signup");
@@ -14,5 +14,5 @@ test("signup success", async ({ page }) => {
     .getByRole("button", { name: /signup/i })
     .click();
 
-  await expect(page).toHaveURL("/");
-});
+  return username;
+}

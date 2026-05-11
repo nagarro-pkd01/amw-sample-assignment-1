@@ -18,7 +18,7 @@ test("edit own post", async ({ page }) => {
 
   await expect(page).toHaveURL("/");
 
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 
   const emptyState = page.getByText(/no posts yet/i);
 

@@ -17,7 +17,7 @@ test("delete own post", async ({ page }) => {
 
   await expect(page).toHaveURL("/");
 
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 
   const emptyState = page.getByText(/no posts yet/i);
 
@@ -56,7 +56,7 @@ test("delete own post", async ({ page }) => {
 
   await deleteButton.click();
 
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 
   await expect(
     page.getByText(title as string)

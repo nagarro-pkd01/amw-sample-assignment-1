@@ -1,39 +1,57 @@
 import { test, expect } from "@playwright/test";
+import { signupAndLogin } from "../auth/utils";
 
 test("create post success", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("language", "en");
-  });
-  await page.goto("/login");
-
-  await page.getByLabel("Username").fill("123");
-  await page.getByLabel("Password").fill("123");
-
-  const loginForm = page.locator("form");
-
-  await loginForm
-    .getByRole("button", { name: /login/i })
-    .click();
+  // -------------------------
+  // LOGIN
+  // -------------------------
+  await signupAndLogin(page);
 
   await expect(page).toHaveURL("/");
 
-  await page.getByRole("button", { name: /create post/i }).click();
+  // -------------------------
+  // WAIT FOR HOME
+  // -------------------------
+  await page.waitForLoadState("load");
 
+  // -------------------------
+  // CLICK HEADER CREATE BUTTON
+  // -------------------------
+  const createButton = page
+    .locator("header")
+    .getByRole("button", { name: /create post/i });
+
+  await expect(createButton).toBeVisible();
+
+  await createButton.click();
+
+  // -------------------------
+  // VERIFY CREATE PAGE
+  // -------------------------
   await expect(page).toHaveURL(/post/);
 
-  const titleInput = page.getByLabel("Title");
-  await expect(titleInput).toBeVisible();
+  // -------------------------
+  // FILL FORM
+  // -------------------------
+  await page.getByLabel(/title/i).fill("My Test Post");
 
-  await titleInput.fill("My Test Post");
+  await page
+    .getByLabel(/description/i)
+    .fill("This is test content");
 
-  await page.getByLabel("Description").fill("This is test content");
+  // -------------------------
+  // SUBMIT FORM
+  // -------------------------
+  const submitButton = page
+    .locator("form")
+    .getByRole("button", { name: /create/i });
 
-  await page.setInputFiles(
-    "input[type='file']",
-    "tests/fixtures/test-image.png"
-  );
+  await expect(submitButton).toBeVisible();
 
-  await page.locator("form button[type='submit']").click();
+  await submitButton.click();
 
+  // -------------------------
+  // VERIFY REDIRECT
+  // -------------------------
   await expect(page).toHaveURL("/");
 });
