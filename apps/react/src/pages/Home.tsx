@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { deletePost, getPosts } from "../services/postService";
+import { API_BASE_URL } from "../services/api";
 import { getUser, isLoggedIn } from "../utils/auth";
 
 import "../styles/Home.scss";
@@ -60,7 +61,7 @@ const Home = () => {
 
                 {post.imageUrl && (
                   <img
-                    src={`${import.meta.env.VITE_API_BASE_URL}${post.imageUrl}`}
+                    src={`${API_BASE_URL}${post.imageUrl}`}
                     alt="post"
                     width={40}
                     height={40}

@@ -5,6 +5,7 @@ import {
   updatePost,
   getPostById,
 } from "../services/postService";
+import { API_BASE_URL } from "../services/api";
 import "../styles/PostForm.scss";
 import { useTranslation } from "react-i18next";
 
@@ -122,14 +123,13 @@ const PostForm = () => {
               src={
                 preview
                   ? preview
-                  : `${import.meta.env.VITE_API_BASE_URL}${existingImage}`
+                  : `${API_BASE_URL}${existingImage}`
               }
               alt="preview"
               className="preview"
             />
           )}
 
-          
           <button type="submit" disabled={loading}>
             {loading
               ? "Saving..."
