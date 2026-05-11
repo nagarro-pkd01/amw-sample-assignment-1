@@ -1,19 +1,12 @@
 import { test, expect } from "@playwright/test";
+import { signupAndLogin } from "../auth/utils";
 
 test("delete own post", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("language", "en");
   });
 
-  await page.goto("/login");
-
-  await page.getByLabel("Username").fill("123");
-  await page.getByLabel("Password").fill("123");
-
-  await page
-    .locator("form")
-    .getByRole("button", { name: /login/i })
-    .click();
+  await signupAndLogin(page);
 
   await expect(page).toHaveURL("/");
 

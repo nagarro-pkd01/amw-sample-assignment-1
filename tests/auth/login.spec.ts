@@ -1,14 +1,20 @@
 import { test, expect } from "@playwright/test";
 
-test("login success", async ({ page }) => {
+test("login success", async ({ page, request }) => {
+  const username = `user_${Date.now()}`;
+  await request.post("http://localhost:5000/auth/signup", {
+    data: { username, password: "password123" },
+  });
+
   await page.goto("/login");
 
-  await page.fill("#username", "123");
-  await page.fill("#password", "123");
+  await page.fill("#username", username);
+  await page.fill("#password", "password123");
 
-  await page.click("button[type='submit']");
-
-  await expect(page).toHaveURL("/login");
+  await Promise.all([
+    page.waitForURL("/", { timeout: 10000 }),
+    page.click("button[type='submit']"),
+  ]);
 });
 
 test("login failure", async ({ page }) => {

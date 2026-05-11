@@ -4,6 +4,14 @@ import jwt from "jsonwebtoken";
 import { dbPromise } from "../config/db";
 import { User } from "../types/user";
 
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
+
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "Warning: JWT_SECRET is not set. Using default dev-secret for auth tokens."
+  );
+}
+
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
@@ -29,7 +37,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
-      process.env.JWT_SECRET as string,
+      JWT_SECRET,
       { expiresIn: "1d" }
     );
 
@@ -70,7 +78,7 @@ router.post("/signup", async (req, res) => {
 
     const token = jwt.sign(
       { id: result.lastID, username },
-      process.env.JWT_SECRET as string,
+      JWT_SECRET,
       { expiresIn: "1d" }
     );
 
